@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#  User Inputs 
+# User Inputs 
 mu1 = float(input("Enter expected return of Asset 1 (e.g. 0.08): "))
 mu2 = float(input("Enter expected return of Asset 2 (e.g. 0.12): "))
 sigma1 = float(input("Enter volatility of Asset 1 (e.g. 0.15): "))
@@ -9,7 +9,7 @@ sigma2 = float(input("Enter volatility of Asset 2 (e.g. 0.25): "))
 rho = float(input("Enter correlation between Asset 1 and Asset 2 (e.g. 0.2): "))
 rf = float(input("Enter risk-free rate (e.g. 0.03):"))
 
-#  Calculations 
+# Calculations 
 cov12 = rho * sigma1 * sigma2
 cov_matrix = np.array([[sigma1**2, cov12],
                        [cov12, sigma2**2]])
@@ -23,12 +23,12 @@ def portfolio_return(w):
 def portfolio_vol(w):
     return np.sqrt(w @ cov_matrix @ w)
 
-#  Feasible set 
+# Feasible set 
 weights_array = np.linspace(-0.5, 1.5, 500)
 port_returns = np.array([portfolio_return([w, 1-w]) for w in weights_array])
 port_vols = np.array([portfolio_vol([w, 1-w]) for w in weights_array])
 
-#  Minimum variance portfolio (MVP) 
+# Minimum variance portfolio (MVP) 
 numerator_mvp = np.linalg.inv(cov_matrix) @ ones
 denominator_mvp = ones @ numerator_mvp
 w_mvp = numerator_mvp / denominator_mvp
@@ -40,11 +40,24 @@ eff_indices = port_returns >= mu_mvp
 eff_vols = port_vols[eff_indices]
 eff_returns = port_returns[eff_indices]
 
-#  Plot 
+# Tangency (Market) Portfolio 
+numerator_tan = np.linalg.inv(cov_matrix) @ (mu - rf * ones)
+denominator_tan = ones @ numerator_tan
+tan_weights = numerator_tan / denominator_tan
+mu_tan = portfolio_return(tan_weights)
+sigma_tan = portfolio_vol(tan_weights)
+
+# Capital Market Line (CML)
+cml_x = np.linspace(0, max(port_vols)*1.1, 100)
+cml_y = rf + (mu_tan - rf)/sigma_tan * cml_x
+
+# Plot 
 plt.figure(figsize=(10,6))
 plt.plot(port_vols, port_returns, color="blue", label="Feasible Set")
 plt.plot(eff_vols, eff_returns, color="red", linewidth=2, label="Efficient Frontier")
+plt.plot(cml_x, cml_y, color="green", linestyle="--", label="Capital Market Line")
 plt.scatter(sigma_mvp, mu_mvp, color="red", marker="*", s=100, label="Minimum Variance Portfolio")
+plt.scatter(sigma_tan, mu_tan, color="magenta", marker="*", s=100, label="Tangency Portfolio")
 plt.scatter(sigma1, mu1, color="black", marker='o', s=70, label='Asset 1')
 plt.scatter(sigma2, mu2, color="green", marker='o', s=70, label='Asset 2')
 plt.xlabel("Volatility (σ)")
@@ -54,8 +67,14 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-#  Results 
+# Results 
 print(f'\nThe weights of the MVP:{w_mvp}')
 print(f'The expected return of the MVP:{mu_mvp:.3f}')
 print(f'The volatility of the MVP:{sigma_mvp:.3f}\n')
+
+print(f'The weights of the market portfolio (MP):{tan_weights:}')
+print(f'The expected return of the MP:{mu_tan:.3f}')
+print(f'The volatility of the MP:{sigma_tan:.3f}')
+
+
 
