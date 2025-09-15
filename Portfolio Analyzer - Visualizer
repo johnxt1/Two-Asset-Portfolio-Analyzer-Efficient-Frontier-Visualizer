@@ -28,9 +28,23 @@ weights_array = np.linspace(-0.5, 1.5, 500)
 port_returns = np.array([portfolio_return([w, 1-w]) for w in weights_array])
 port_vols = np.array([portfolio_vol([w, 1-w]) for w in weights_array])
 
+#  Minimum variance portfolio (MVP) 
+numerator_mvp = np.linalg.inv(cov_matrix) @ ones
+denominator_mvp = ones @ numerator_mvp
+w_mvp = numerator_mvp / denominator_mvp
+mu_mvp = portfolio_return(w_mvp)
+sigma_mvp = portfolio_vol(w_mvp)
+
+# Efficient frontier: upper part (returns >= mu_mvp)
+eff_indices = port_returns >= mu_mvp
+eff_vols = port_vols[eff_indices]
+eff_returns = port_returns[eff_indices]
+
 #  Plot 
 plt.figure(figsize=(10,6))
 plt.plot(port_vols, port_returns, color="blue", label="Feasible Set")
+plt.plot(eff_vols, eff_returns, color="red", linewidth=2, label="Efficient Frontier")
+plt.scatter(sigma_mvp, mu_mvp, color="red", marker="*", s=100, label="Minimum Variance Portfolio")
 plt.scatter(sigma1, mu1, color="black", marker='o', s=70, label='Asset 1')
 plt.scatter(sigma2, mu2, color="green", marker='o', s=70, label='Asset 2')
 plt.xlabel("Volatility (σ)")
@@ -39,3 +53,9 @@ plt.title("Feasible Set, Efficient Frontier, MVP, Tangency Portfolio & CML")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+#  Results 
+print(f'\nThe weights of the MVP:{w_mvp}')
+print(f'The expected return of the MVP:{mu_mvp:.3f}')
+print(f'The volatility of the MVP:{sigma_mvp:.3f}\n')
+
