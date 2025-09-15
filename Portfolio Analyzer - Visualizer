@@ -1,0 +1,41 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+#  User Inputs 
+mu1 = float(input("Enter expected return of Asset 1 (e.g. 0.08): "))
+mu2 = float(input("Enter expected return of Asset 2 (e.g. 0.12): "))
+sigma1 = float(input("Enter volatility of Asset 1 (e.g. 0.15): "))
+sigma2 = float(input("Enter volatility of Asset 2 (e.g. 0.25): "))
+rho = float(input("Enter correlation between Asset 1 and Asset 2 (e.g. 0.2): "))
+rf = float(input("Enter risk-free rate (e.g. 0.03):"))
+
+#  Calculations 
+cov12 = rho * sigma1 * sigma2
+cov_matrix = np.array([[sigma1**2, cov12],
+                       [cov12, sigma2**2]])
+mu = np.array([mu1, mu2])
+ones = np.array([1, 1])
+
+# Portfolio return & volatility functions
+def portfolio_return(w):
+    return w @ mu
+
+def portfolio_vol(w):
+    return np.sqrt(w @ cov_matrix @ w)
+
+#  Feasible set 
+weights_array = np.linspace(-0.5, 1.5, 500)
+port_returns = np.array([portfolio_return([w, 1-w]) for w in weights_array])
+port_vols = np.array([portfolio_vol([w, 1-w]) for w in weights_array])
+
+#  Plot 
+plt.figure(figsize=(10,6))
+plt.plot(port_vols, port_returns, color="blue", label="Feasible Set")
+plt.scatter(sigma1, mu1, color="black", marker='o', s=70, label='Asset 1')
+plt.scatter(sigma2, mu2, color="green", marker='o', s=70, label='Asset 2')
+plt.xlabel("Volatility (σ)")
+plt.ylabel("Expected Return (μ)")
+plt.title("Feasible Set, Efficient Frontier, MVP, Tangency Portfolio & CML")
+plt.legend()
+plt.grid(True)
+plt.show()
